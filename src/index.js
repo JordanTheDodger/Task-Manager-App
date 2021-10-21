@@ -102,16 +102,13 @@ app.get('/users/:id', async (req, res) => {
 app.patch('/users/:id', async (req, res) => {
 
     //# Setting up rules when user attempts for an invalid update operation
+    // every() provdie a callback fun for every item in array
+    // Syntax: array.every((array_elemet) => {//do something})
+    // if every fun return True for all elements in array, then it will return True 
+    // otherwise False (even if there is one False)
     const updates = Object.keys(req.body) // Object.keys(object) will return array of strings
     const allowedUpdates = ['name', 'email', 'password', 'age']
-    const isValidUpdateOperation = updates.every((update) => {
-        // every() provdie a callback fun for every item in array
-        // Syntax: array.every((array_elemet) => {//do something})
-        // if every fun return True for all elements in array, then it will return True 
-        // otherwise False (even if there is one False)
-        allowedUpdates.includes(update)
-    })
-
+    const isValidUpdateOperation = updates.every((update) => allowedUpdates.includes(update))
     if (!isValidUpdateOperation) {
         return res.status(400).send({ error: 'Invalid Update operation' })
     }
@@ -123,9 +120,8 @@ app.patch('/users/:id', async (req, res) => {
         const new_updated_user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
         if (!new_updated_user) {
             return res.status(404).send('User not found')
-        } else {
-            res.send(new_updated_user)
         }
+        res.send(new_updated_user)
     } catch (error) {
         //Two cases:
         //1) Server related error
@@ -133,6 +129,20 @@ app.patch('/users/:id', async (req, res) => {
         // only handling validataion error
         res.status(400).send(error)
     }
+})
+
+// Delete user endpoint
+app.delete('/users/:id', async (req, res) => {
+    try {
+        const deleted_user = await User.findByIdAndDelete(req.params.id)
+        if (!deleted_user) {
+            return res.status(404).send('User not found')
+        }
+        res.status(200).send(deleted_user)
+    } catch (error) {
+        res.status(500).send('Internal server error')
+    }
+
 })
 
 //#Create a Task
@@ -215,7 +225,7 @@ app.patch('/tasks/:id', async (req, res) => {
     //# Checking if the request is for valid update 
     const updates = Object.keys(req.body)
     const alllowedUpdates = ['description', 'completed']
-    const isValidUpdateOperation = updates.every((values) => alllowedUpdates.includes(updates))
+    const isValidUpdateOperation = updates.every((values) => alllowedUpdates.includes(values))
     if (!isValidUpdateOperation) {
         return res.status(400).send({ error: 'Invalid Update request' })
     }
@@ -225,15 +235,26 @@ app.patch('/tasks/:id', async (req, res) => {
         const new_updated_task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
         if (!new_updated_task) {
             return res.status(404).send('Task not found')
-        } else {
-            res.send(new_updated_task)
         }
+        res.send(new_updated_task)
     } catch (error) {
         console.log(error);
         res.status(400).send(error)
     }
 })
 
+// Delete task
+app.delete('/tasks/:id', async (req, res) => {
+    try {
+        const deleted_task = await Task.findByIdAndDelete(req.params.id)
+        if (!deleted_task) {
+            return res.status(404).send('Task not found')
+        }
+        res.status(200).send(deleted_task)
+    } catch (error) {
+        res.status(500).send('Internal server error')
+    }
+})
 app.listen(port, () => {
     console.log('Server is up on ' + port);
 })
