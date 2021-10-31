@@ -9,14 +9,39 @@ const User = require('../models/user')
 //#endregion
 
 //switching references from app to router as "app" does not exist in this file
+//# User Login
+router.post('/users/login', async (req, res) => {
+    //2 ways to provide Login
+    //1. Traditional way:
+    //Find user by email then use bcrypt.compare() to compare pwd with hash stored in db
+    //2. create a re-useable funtion that perform 1.
+
+    try {
+        // create your own User class method 
+        // Definition => model>user.js
+        // Call => router>user.js
+        // pass in user email and pwd(passed in http request's body) as function parameters
+        const user = await User.findByCredentials(req.body.email, req.body.password)
+
+        // we want to create a session for the user who logged in i.e "user" defined in this router
+        const token = await user.generateAuthToken()
+        res.send({ user, token })
+    } catch (error) {
+        console.log(error);
+        res.status(400).send(error)
+    }
+})
+//#endregion
+
 //# Create User
 router.post('/users', async (req, res) => {
     // Creating user
     //USING Async Await
     const user = new User(req.body)
+    const token = await user.generateAuthToken()
     try {
         await user.save()
-        res.status(201).send(user)
+        res.status(201).send({ user, token })
     } catch (error) {
         res.status(400).send(error)
     }
@@ -110,8 +135,19 @@ router.patch('/users/:id', async (req, res) => {
 
     try {
         // setting option new: true will return a new user 
-        // and runValidators will validate new data
-        const new_updated_user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        // and runValidators will validate new data.
+        // const new_updated_user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+
+        //#securing user update data 
+        // findByIdAndUpdate bypass mongoose, perfom direction operation on db
+        const new_updated_user = await User.findById(req.params.id)
+        //performing update 
+        updates.forEach((new_values) => {
+            new_updated_user[new_values] = req.body[new_values]
+        })
+        await new_updated_user.save()
+        //#endregion
+
         if (!new_updated_user) {
             return res.status(404).send('User not found')
         }

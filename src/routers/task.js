@@ -96,7 +96,15 @@ router.patch('/tasks/:id', async (req, res) => {
     //#endregion
 
     try {
-        const new_updated_task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        ////#securing task updates
+        // const new_updated_task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        const new_updated_task = await Task.findById(req.params.id)
+        //performing update
+        updates.forEach((new_values) => {
+            new_updated_task[new_values] = req.body[new_values]
+        })
+        await new_updated_task.save()
+        //#endregion
         if (!new_updated_task) {
             return res.status(404).send('Task not found')
         }

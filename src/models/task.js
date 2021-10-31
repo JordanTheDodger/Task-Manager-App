@@ -1,8 +1,9 @@
 const mongoose = require('mongoose')
 // const valdtor = require('validator')
 
-// Task
-const Task = mongoose.model('Task', {
+
+//defing Task Schema
+const taskSchema = new mongoose.Schema({
     description: {
         type: String,
         require: true,
@@ -13,6 +14,10 @@ const Task = mongoose.model('Task', {
         default: false
     }
 })
+
+//defining Task model
+// Task
+const Task = mongoose.model('Task', taskSchema)
 
 // create Task(Schema) instance
 // const new_Task = new Task({

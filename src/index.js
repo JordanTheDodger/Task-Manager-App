@@ -28,7 +28,8 @@ app.use(task_router)
 // app.use(router)
 //#endregion
 
-// //# Create User  
+//#region 
+// //# Create User
 // app.post('/users', async (req, res) => {
 //     // Creating user
 //     //USING Async Await
@@ -157,7 +158,9 @@ app.use(task_router)
 //     }
 
 // })
+//#endregion
 
+//#region 
 // //#Create a Task
 // app.post('/tasks', async (req, res) => {
 //     // Creating task
@@ -268,7 +271,18 @@ app.use(task_router)
 //         res.status(500).send('Internal server error')
 //     }
 // })
+//#endregion
 
+const jwt = require('jsonwebtoken')
+const func = async () => {
+    const token = jwt.sign({ _id: 'abc123' }, 'SignedToken', { expiresIn: '10  seconds' })
+    console.log(token);
+
+    const isValide = jwt.verify(token, 'SignedToken')
+    if (!isValide) return error
+    console.log(isValide);
+}
+func()
 
 
 app.listen(port, () => {
